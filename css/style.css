@@ -1,1 +1,8 @@
+body{
+margin:0;
+font-family:Tahoma;
+}
 
+#map{
+height:90vh;
+}
