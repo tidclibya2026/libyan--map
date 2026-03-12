@@ -1,61 +1,70 @@
-var map = L.map('map').setView([27.0, 17.0], 6);
+var map = L.map('map').setView([27.5,17],6)
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
- attribution:'© OpenStreetMap'
-}).addTo(map);
-
-
-// طبقات
-var hotelsLayer = L.layerGroup().addTo(map);
-var restaurantsLayer = L.layerGroup().addTo(map);
-var cafesLayer = L.layerGroup().addTo(map);
-var heritageLayer = L.layerGroup().addTo(map);
-var officeLayer = L.layerGroup().addTo(map);
+L.tileLayer(
+'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+{
+ attribution:'OpenStreetMap'
+}
+).addTo(map)
 
 
-// الفنادق
-fetch("data/hotels.geojson")
+
+var hotelsLayer = L.layerGroup().addTo(map)
+var restaurantsLayer = L.layerGroup().addTo(map)
+var cafesLayer = L.layerGroup().addTo(map)
+var heritageLayer = L.layerGroup().addTo(map)
+var officeLayer = L.layerGroup().addTo(map)
+
+
+
+function loadLayer(file,layer){
+
+fetch("data/"+file)
+
 .then(res=>res.json())
+
 .then(data=>{
- L.geoJSON(data,{
-  onEachFeature:function(f,l){
-   l.bindPopup("<b>"+f.properties.name+"</b><br>"+f.properties.city)
-  }
- }).addTo(hotelsLayer)
+
+L.geoJSON(data,{
+
+onEachFeature:function(feature,layer){
+
+var p = feature.properties
+
+var popup = "<b>"+(p.name||p.ar_name)+"</b>"
+
+if(p.city) popup += "<br>"+p.city
+
+if(p.phone) popup += "<br>"+p.phone
+
+layer.bindPopup(popup)
+
+}
+
+}).addTo(layer)
+
 })
 
-
-// المطاعم
-fetch("data/restaurants.geojson")
-.then(res=>res.json())
-.then(data=>{
- L.geoJSON(data,{
-  onEachFeature:function(f,l){
-   l.bindPopup("<b>"+f.properties.name+"</b>")
-  }
- }).addTo(restaurantsLayer)
-})
+}
 
 
-// المقاهي
-fetch("data/cafes.geojson")
-.then(res=>res.json())
-.then(data=>{
- L.geoJSON(data).addTo(cafesLayer)
-})
+
+loadLayer("hotels.geojson",hotelsLayer)
+loadLayer("restaurants.geojson",restaurantsLayer)
+loadLayer("cafes.geojson",cafesLayer)
+loadLayer("heritage.geojson",heritageLayer)
+loadLayer("tourism_offices.geojson",officeLayer)
 
 
-// المواقع الأثرية
-fetch("data/heritage.geojson")
-.then(res=>res.json())
-.then(data=>{
- L.geoJSON(data).addTo(heritageLayer)
-})
 
+var overlays = {
 
-// المكاتب السياحية
-fetch("data/tourism_offices.geojson")
-.then(res=>res.json())
-.then(data=>{
- L.geoJSON(data).addTo(officeLayer)
-})
+"الفنادق":hotelsLayer,
+"المطاعم":restaurantsLayer,
+"المقاهي":cafesLayer,
+"المواقع الأثرية":heritageLayer,
+"المكاتب السياحية":officeLayer
+
+}
+
+L.control.layers(null,overlays).addTo(map)
