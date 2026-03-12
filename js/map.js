@@ -1,67 +1,82 @@
-var map = L.map('map').setView([27.5,17],6)
+var map = L.map('map').setView([27.5,17],6);
 
-L.tileLayer(
-'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-{
- attribution:'OpenStreetMap'
-}
-).addTo(map)
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+ attribution:'© OpenStreetMap'
+}).addTo(map);
 
 
+// الطبقات
+var hotelsLayer = L.layerGroup().addTo(map);
+var restaurantsLayer = L.layerGroup().addTo(map);
+var cafesLayer = L.layerGroup().addTo(map);
+var heritageLayer = L.layerGroup().addTo(map);
+var officesLayer = L.layerGroup().addTo(map);
 
-var hotelsLayer = L.layerGroup().addTo(map)
-var restaurantsLayer = L.layerGroup().addTo(map)
-var cafesLayer = L.layerGroup().addTo(map)
-var heritageLayer = L.layerGroup().addTo(map)
-var officeLayer = L.layerGroup().addTo(map)
 
+// دالة تحميل GeoJSON
+function loadLayer(url, layer){
 
+fetch(url)
 
-function loadLayer(file,layer){
+.then(function(response){
+ return response.json();
+})
 
-fetch("data/"+file)
+.then(function(data){
 
-.then(res=>res.json())
+var geo = L.geoJSON(data,{
 
-.then(data=>{
+pointToLayer:function(feature,latlng){
 
-L.geoJSON(data,{
+return L.marker(latlng);
+
+},
 
 onEachFeature:function(feature,layer){
 
-var p = feature.properties
+var p = feature.properties;
 
-var name = p.name || p.ar_name || "موقع سياحي"
+var name = p.name || p.ar_name || p["اسم المطعم"] || p["إسم المرفق"] || "موقع سياحي";
 
-var popup = "<b>"+name+"</b>"
+var popup = "<b>"+name+"</b>";
 
-if(p.city) popup += "<br>"+p.city
+if(p.city) popup += "<br>"+p.city;
 
-if(p.phone) popup += "<br>"+p.phone
-
-layer.bindPopup(popup)
+layer.bindPopup(popup);
 
 }
 
-}).addTo(layer)
+});
+
+geo.addTo(layer);
 
 })
 
+.catch(function(error){
+
+console.log("خطأ تحميل:",url,error);
+
+});
+
 }
 
 
 
-loadLayer("hotels.geojson",hotelsLayer)
+// تحميل الطبقات
 
-loadLayer("restaurants.geojson",restaurantsLayer)
+loadLayer("data/hotels.geojson",hotelsLayer);
 
-loadLayer("cafes.geojson",cafesLayer)
+loadLayer("data/restaurants.geojson",restaurantsLayer);
 
-loadLayer("heritage_sites.geojson",heritageLayer)
+loadLayer("data/cafes.geojson",cafesLayer);
 
-loadLayer("tourism_offices.geojson",officeLayer)
+loadLayer("data/heritage_sites.geojson",heritageLayer);
+
+loadLayer("data/tourism_offices.geojson",officesLayer);
 
 
+
+// التحكم بالطبقات
 
 var overlays = {
 
@@ -69,8 +84,8 @@ var overlays = {
 "المطاعم":restaurantsLayer,
 "المقاهي":cafesLayer,
 "المواقع الأثرية":heritageLayer,
-"المكاتب السياحية":officeLayer
+"المكاتب السياحية":officesLayer
 
-}
+};
 
-L.control.layers(null,overlays).addTo(map)
+L.control.layers(null,overlays).addTo(map);
