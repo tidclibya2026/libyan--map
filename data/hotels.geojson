@@ -1,4 +1,36 @@
 {
 "type":"FeatureCollection",
-"features":[]
+"features":[
+
+{
+"type":"Feature",
+
+"properties":{
+"name":"فندق كورنثيا",
+"city":"طرابلس"
+},
+
+"geometry":{
+"type":"Point",
+"coordinates":[13.1800,32.8925]
+}
+
+},
+
+{
+"type":"Feature",
+
+"properties":{
+"name":"فندق المهاري",
+"city":"طرابلس"
+},
+
+"geometry":{
+"type":"Point",
+"coordinates":[13.1913,32.8870]
+}
+
+}
+
+]
 }
