@@ -1,43 +1,61 @@
-// إنشاء الخريطة
-var map = L.map('map').setView([26.3351,17.2283],6);
+var map = L.map('map').setView([27.0, 17.0], 6);
 
-// طبقة الخريطة
-L.tileLayer(
-'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-{
-maxZoom:18
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+ attribution:'© OpenStreetMap'
 }).addTo(map);
 
 
-// طبقات البيانات
-var hotelLayer = L.layerGroup().addTo(map);
-var restaurantLayer = L.layerGroup().addTo(map);
-var cafeLayer = L.layerGroup().addTo(map);
+// طبقات
+var hotelsLayer = L.layerGroup().addTo(map);
+var restaurantsLayer = L.layerGroup().addTo(map);
+var cafesLayer = L.layerGroup().addTo(map);
+var heritageLayer = L.layerGroup().addTo(map);
+var officeLayer = L.layerGroup().addTo(map);
 
 
-// تحميل الفنادق
+// الفنادق
 fetch("data/hotels.geojson")
-.then(response=>response.json())
+.then(res=>res.json())
 .then(data=>{
+ L.geoJSON(data,{
+  onEachFeature:function(f,l){
+   l.bindPopup("<b>"+f.properties.name+"</b><br>"+f.properties.city)
+  }
+ }).addTo(hotelsLayer)
+})
 
-L.geoJSON(data,{
 
-pointToLayer:function(feature,latlng){
+// المطاعم
+fetch("data/restaurants.geojson")
+.then(res=>res.json())
+.then(data=>{
+ L.geoJSON(data,{
+  onEachFeature:function(f,l){
+   l.bindPopup("<b>"+f.properties.name+"</b>")
+  }
+ }).addTo(restaurantsLayer)
+})
 
-return L.marker(latlng);
 
-},
+// المقاهي
+fetch("data/cafes.geojson")
+.then(res=>res.json())
+.then(data=>{
+ L.geoJSON(data).addTo(cafesLayer)
+})
 
-onEachFeature:function(feature,layer){
 
-layer.bindPopup(
-"<b>"+feature.properties.name+"</b><br>"
-+
-feature.properties.city
-);
+// المواقع الأثرية
+fetch("data/heritage.geojson")
+.then(res=>res.json())
+.then(data=>{
+ L.geoJSON(data).addTo(heritageLayer)
+})
 
-}
 
-}).addTo(hotelLayer);
-
-});
+// المكاتب السياحية
+fetch("data/tourism_offices.geojson")
+.then(res=>res.json())
+.then(data=>{
+ L.geoJSON(data).addTo(officeLayer)
+})
