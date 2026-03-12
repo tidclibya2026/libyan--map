@@ -1,44 +1,41 @@
 <!DOCTYPE html>
 <html lang="ar">
 <head>
-
-<meta charset="utf-8">
-<title>الخريطة السياحية لليبيا</title>
-
-<link rel="stylesheet" href="css/style.css">
-
-<link rel="stylesheet"
-href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-
+    <meta charset="utf-8">
+    <title>الخريطة السياحية لليبيا</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 </head>
-
 <body>
+    <header>
+        <h1>الخريطة السياحية لليبيا</h1>
+        <div class="controls">
+            <input type="text" id="search" placeholder="ابحث عن اسم المرفق">
+            <select id="cityFilter">
+                <option value="">كل المدن</option>
+                <option value="طرابلس">طرابلس</option>
+                <option value="بنغازي">بنغازي</option>
+                <option value="مصراتة">مصراتة</option>
+                <option value="سبها">سبها</option>
+                <option value="اجدابيا">اجدابيا</option>
+                <option value="الخمس">الخمس</option>
+                <!-- يمكنك إضافة المزيد من المدن حسب بياناتك -->
+            </select>
+        </div>
+    </header>
 
-<header>
+    <!-- شريط تصفية إضافي حسب نوع المرفق -->
+    <div style="background:#f0f0f0; padding:10px; display:flex; gap:10px; justify-content:center;">
+        <button class="type-filter active" data-type="all">الكل</button>
+        <button class="type-filter" data-type="cafe">مقاهي</button>
+        <button class="type-filter" data-type="hotel">فنادق</button>
+        <button class="type-filter" data-type="restaurant">مطاعم</button>
+        <button class="type-filter" data-type="office">مكاتب سياحية</button>
+    </div>
 
-<h1>الخريطة السياحية لليبيا</h1>
+    <div id="map"></div>
 
-<div class="controls">
-
-<input type="text" id="search" placeholder="ابحث عن موقع سياحي">
-
-<select id="cityFilter">
-<option value="">كل المدن</option>
-<option value="طرابلس">طرابلس</option>
-<option value="بنغازي">بنغازي</option>
-<option value="مصراتة">مصراتة</option>
-<option value="سبها">سبها</option>
-</select>
-
-</div>
-
-</header>
-
-<div id="map"></div>
-
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-<script src="js/map.js"></script>
-
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="js/map.js"></script>
 </body>
 </html>
