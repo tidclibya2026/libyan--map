@@ -31,7 +31,9 @@ onEachFeature:function(feature,layer){
 
 var p = feature.properties
 
-var popup = "<b>"+(p.name||p.ar_name)+"</b>"
+var name = p.name || p.ar_name || "موقع سياحي"
+
+var popup = "<b>"+name+"</b>"
 
 if(p.city) popup += "<br>"+p.city
 
@@ -50,9 +52,13 @@ layer.bindPopup(popup)
 
 
 loadLayer("hotels.geojson",hotelsLayer)
+
 loadLayer("restaurants.geojson",restaurantsLayer)
+
 loadLayer("cafes.geojson",cafesLayer)
-loadLayer("heritage.geojson",heritageLayer)
+
+loadLayer("heritage_sites.geojson",heritageLayer)
+
 loadLayer("tourism_offices.geojson",officeLayer)
 
 
