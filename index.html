@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <html lang="ar">
-
 <head>
 
-<meta charset="UTF-8">
-
+<meta charset="utf-8"/>
 <title>الخريطة السياحية لليبيا</title>
 
-<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/style.css"/>
 
 <link rel="stylesheet"
-href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
 
 </head>
 
@@ -19,6 +18,20 @@ href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <header>
 
 <h1>الخريطة السياحية لليبيا</h1>
+
+<div class="controls">
+
+<input type="text" id="search" placeholder="ابحث عن موقع سياحي">
+
+<select id="cityFilter">
+<option value="">كل المدن</option>
+<option value="طرابلس">طرابلس</option>
+<option value="بنغازي">بنغازي</option>
+<option value="مصراتة">مصراتة</option>
+<option value="سبها">سبها</option>
+</select>
+
+</div>
 
 </header>
 
@@ -29,5 +42,4 @@ href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="js/map.js"></script>
 
 </body>
-
 </html>
