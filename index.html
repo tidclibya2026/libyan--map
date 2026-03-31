@@ -1,41 +1,295 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
-    <meta charset="utf-8">
-    <title>الخريطة السياحية لليبيا</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>أطلس ليبيا السياحي - الخريطة التفاعلية</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Tajawal', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #2c3e2f;
+            color: #333;
+        }
+        .header {
+            background: linear-gradient(135deg, #1e3c2c, #2a5a3a);
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            position: relative;
+            z-index: 10;
+        }
+        .header h1 {
+            font-size: 1.8rem;
+            letter-spacing: 1px;
+        }
+        .header p {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        .main-container {
+            display: flex;
+            height: calc(100vh - 100px);
+        }
+        #map {
+            flex: 4;
+            height: 100%;
+            border-radius: 0;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+        .sidebar {
+            flex: 1;
+            background: #f8f9f0;
+            padding: 15px;
+            overflow-y: auto;
+            border-right: 1px solid #ccc;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+            direction: rtl;
+        }
+        .sidebar h3 {
+            border-bottom: 2px solid #2a5a3a;
+            padding-bottom: 8px;
+            margin-bottom: 15px;
+            color: #1e3c2c;
+        }
+        .layer-control {
+            margin-bottom: 20px;
+        }
+        .layer-control label {
+            display: block;
+            margin: 8px 0;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .layer-control input {
+            margin-left: 8px;
+            transform: scale(1.1);
+            vertical-align: middle;
+        }
+        .legend {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border: 1px solid #ddd;
+        }
+        .legend h4 {
+            margin-bottom: 8px;
+            color: #2a5a3a;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 6px;
+            font-size: 12px;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-left: 8px;
+            border-radius: 4px;
+        }
+        .legend-icon {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+            margin-left: 8px;
+        }
+        footer {
+            text-align: center;
+            background: #1e3c2c;
+            color: white;
+            padding: 6px;
+            font-size: 12px;
+        }
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+                height: auto;
+            }
+            .sidebar {
+                order: 2;
+                max-height: 300px;
+            }
+            #map {
+                height: 500px;
+            }
+        }
+    </style>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.ajax@2.1.0/dist/leaflet.ajax.min.js"></script>
 </head>
 <body>
-    <header>
-        <h1>الخريطة السياحية لليبيا</h1>
-        <div class="controls">
-            <input type="text" id="search" placeholder="ابحث عن اسم المرفق">
-            <select id="cityFilter">
-                <option value="">كل المدن</option>
-                <option value="طرابلس">طرابلس</option>
-                <option value="بنغازي">بنغازي</option>
-                <option value="مصراتة">مصراتة</option>
-                <option value="سبها">سبها</option>
-                <option value="اجدابيا">اجدابيا</option>
-                <option value="الخمس">الخمس</option>
-                <!-- يمكنك إضافة المزيد من المدن حسب بياناتك -->
-            </select>
+<div class="header">
+    <h1><i class="fas fa-map-marked-alt"></i> أطلس ليبيا السياحي</h1>
+    <p>استكشف المعالم الأثرية، المنتجعات، والقرى السياحية، والطبيعة الخلابة</p>
+</div>
+<div class="main-container">
+    <div class="sidebar">
+        <h3><i class="fas fa-layer-group"></i> الطبقات</h3>
+        <div class="layer-control">
+            <label><input type="checkbox" id="toggleTourist" checked> 🏖️ القرى والمنتجعات السياحية</label>
+            <label><input type="checkbox" id="toggleHistoric" checked> 🏛️ المعالم الأثرية والتاريخية</label>
+            <label><input type="checkbox" id="toggleNatural" checked> 🌊 المعالم الطبيعية (بحيرات، أودية، شواطئ)</label>
         </div>
-    </header>
-
-    <!-- شريط تصفية إضافي حسب نوع المرفق -->
-    <div style="background:#f0f0f0; padding:10px; display:flex; gap:10px; justify-content:center;">
-        <button class="type-filter active" data-type="all">الكل</button>
-        <button class="type-filter" data-type="cafe">مقاهي</button>
-        <button class="type-filter" data-type="hotel">فنادق</button>
-        <button class="type-filter" data-type="restaurant">مطاعم</button>
-        <button class="type-filter" data-type="office">مكاتب سياحية</button>
+        <div class="legend">
+            <h4><i class="fas fa-info-circle"></i> دليل الأيقونات</h4>
+            <div class="legend-item"><div class="legend-color" style="background:#e67e22;"></div> منتجع / قرية سياحية</div>
+            <div class="legend-item"><div class="legend-color" style="background:#8e44ad;"></div> موقع أثري / متحف</div>
+            <div class="legend-item"><div class="legend-color" style="background:#2980b9;"></div> بحيرة / وادي / شاطئ</div>
+            <div class="legend-item"><div class="legend-icon"><i class="fas fa-mountain"></i></div> جبل / كهف / طبيعة</div>
+            <div class="legend-item"><div class="legend-icon"><i class="fas fa-hotel"></i></div> فندق / مبيت</div>
+        </div>
+        <div class="legend">
+            <h4><i class="fas fa-chart-line"></i> إحصائيات سريعة</h4>
+            <p>📌 إجمالي المعالم المعروضة: <span id="totalCount">0</span></p>
+            <p>🏛️ مواقع أثرية: <span id="historicCount">0</span></p>
+            <p>🏖️ منتجعات وقرى سياحية: <span id="touristCount">0</span></p>
+            <p>🌿 معالم طبيعية: <span id="naturalCount">0</span></p>
+        </div>
+        <p style="font-size:12px; margin-top:15px; color:#555;">✔️ اضغط على أيقونة للاطلاع على التفاصيل والصور.<br>✔️ يمكنك إخفاء/إظهار الطبقات من القائمة.</p>
     </div>
-
     <div id="map"></div>
+</div>
+<footer>
+    <i class="fas fa-database"></i> بيانات من أطلس ليبيا السياحي | خريطة تفاعلية - مشروع مفتوح المصدر
+</footer>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="js/map.js"></script>
+<script>
+    // تهيئة الخريطة
+    var map = L.map('map').setView([28.0, 16.5], 6);  // وسط ليبيا تقريباً
+
+    // طبقة الخريطة الأساسية
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; CartoDB',
+        subdomains: 'abcd',
+        maxZoom: 18,
+        minZoom: 5,
+        dir: 'rtl'
+    }).addTo(map);
+
+    // أيقونات مخصصة حسب النوع
+    const iconTourist = L.divIcon({ html: '<i class="fas fa-umbrella-beach" style="font-size:24px; color:#e67e22; text-shadow:1px 1px white;"></i>', iconSize: [24,24], className: 'custom-icon' });
+    const iconHistoric = L.divIcon({ html: '<i class="fas fa-landmark" style="font-size:24px; color:#8e44ad; text-shadow:1px 1px white;"></i>', iconSize: [24,24], className: 'custom-icon' });
+    const iconNatural = L.divIcon({ html: '<i class="fas fa-water" style="font-size:24px; color:#2980b9; text-shadow:1px 1px white;"></i>', iconSize: [24,24], className: 'custom-icon' });
+    const iconDefault = L.divIcon({ html: '<i class="fas fa-map-marker-alt" style="font-size:22px; color:#2c3e2f;"></i>', iconSize: [22,22], className: 'custom-icon' });
+
+    // متغيرات لتخزين الطبقات
+    let touristLayer, historicLayer, naturalLayer;
+    let allFeaturesCount = { tourist:0, historic:0, natural:0 };
+
+    // دالة لإنشاء popup محسّن
+    function createPopup(feature) {
+        let name = feature.properties.name || feature.properties.NAME || "موقع سياحي";
+        let desc = feature.properties.description || feature.properties.Description || "لا يوجد وصف مفصل";
+        // إذا كان الوصف بصيغة HTML أو نص عادي
+        let content = `<div style="max-width:300px; max-height:250px; overflow-y:auto; direction:rtl; font-family:Tajawal;">
+                        <h4 style="color:#2a5a3a; margin:0 0 5px;">${name}</h4>
+                        <div style="font-size:13px;">${desc}</div>
+                       </div>`;
+        return L.popup({ maxWidth: 320 }).setContent(content);
+    }
+
+    // تحديد النوع بناءً على الخصائص أو المصدر
+    function getFeatureType(feature) {
+        let props = feature.properties;
+        let name = (props.name || props.NAME || "").toLowerCase();
+        let category = props.التصن || props.category || props.type || "";
+        if (category.includes("قرية سياحية") || category.includes("منتجع") || name.includes("منتجع") || name.includes("قرية") || props.التصن === "شاليهات" || props.التصن === "منتجع سياحي")
+            return "tourist";
+        if (category.includes("أثري") || props.selection_ === "ثقافي" || name.includes("معبد") || name.includes("كنيسة") || name.includes("مسرح") || name.includes("متحف") || name.includes("قوس") || name.includes("حمامات"))
+            return "historic";
+        return "natural";
+    }
+
+    // دالة لإضافة الطبقات مع العد
+    function loadLayer(data, layerType, icon, layerVar) {
+        let geoJsonLayer = L.geoJSON(data, {
+            pointToLayer: function(feature, latlng) {
+                return L.marker(latlng, { icon: icon });
+            },
+            onEachFeature: function(feature, layer) {
+                if (feature.geometry.type === 'Point') {
+                    layer.bindPopup(createPopup(feature));
+                } else if (feature.geometry.type === 'Polygon' || feature.geometry.type === 'LineString') {
+                    // للمساحات والخطوط نضيف popup عند النقر
+                    layer.bindPopup(createPopup(feature));
+                }
+                // عد الميزات
+                if (layerType === 'tourist') allFeaturesCount.tourist++;
+                else if (layerType === 'historic') allFeaturesCount.historic++;
+                else if (layerType === 'natural') allFeaturesCount.natural++;
+            }
+        });
+        return geoJsonLayer;
+    }
+
+    // تحميل الملفات (ملاحظة: المسارات تفترض وجود الملفات في مجلد data/)
+    // نظراً لضخامة البيانات، سيتم تحميلها باستخدام fetch وجمعها ثم تقسيمها حسب النوع التلقائي
+    Promise.all([
+        fetch('data/atals.json').then(res => res.json()),
+        fetch('data/data.geojson').then(res => res.json()),
+        fetch('data/mapatlas.geojson').then(res => res.json())
+    ]).then(([atals, dataGeo, mapAtlas]) => {
+        // دمج جميع الميزات
+        let allFeatures = [...atals.features, ...dataGeo.features, ...mapAtlas.features];
+        
+        // تصنيف الميزات
+        let touristFeatures = { type: "FeatureCollection", features: [] };
+        let historicFeatures = { type: "FeatureCollection", features: [] };
+        let naturalFeatures = { type: "FeatureCollection", features: [] };
+
+        allFeatures.forEach(f => {
+            if (!f.geometry) return;
+            let type = getFeatureType(f);
+            if (type === "tourist") touristFeatures.features.push(f);
+            else if (type === "historic") historicFeatures.features.push(f);
+            else naturalFeatures.features.push(f);
+        });
+
+        // إنشاء الطبقات
+        touristLayer = loadLayer(touristFeatures, 'tourist', iconTourist);
+        historicLayer = loadLayer(historicFeatures, 'historic', iconHistoric);
+        naturalLayer = loadLayer(naturalFeatures, 'natural', iconNatural);
+
+        // إضافة الطبقات إلى الخريطة
+        touristLayer.addTo(map);
+        historicLayer.addTo(map);
+        naturalLayer.addTo(map);
+
+        // تحديث الإحصائيات
+        document.getElementById('touristCount').innerText = allFeaturesCount.tourist;
+        document.getElementById('historicCount').innerText = allFeaturesCount.historic;
+        document.getElementById('naturalCount').innerText = allFeaturesCount.natural;
+        document.getElementById('totalCount').innerText = allFeaturesCount.tourist + allFeaturesCount.historic + allFeaturesCount.natural;
+
+        // التحكم في ظهور الطبقات
+        document.getElementById('toggleTourist').addEventListener('change', (e) => {
+            if (e.target.checked) touristLayer.addTo(map);
+            else map.removeLayer(touristLayer);
+        });
+        document.getElementById('toggleHistoric').addEventListener('change', (e) => {
+            if (e.target.checked) historicLayer.addTo(map);
+            else map.removeLayer(historicLayer);
+        });
+        document.getElementById('toggleNatural').addEventListener('change', (e) => {
+            if (e.target.checked) naturalLayer.addTo(map);
+            else map.removeLayer(naturalLayer);
+        });
+
+        // إضافة بعض التعديلات لتوسيط الخريطة على ليبيا
+        map.fitBounds([[19.0, 9.0], [33.0, 25.0]]);
+    }).catch(error => {
+        console.error("خطأ في تحميل البيانات:", error);
+        document.querySelector('.sidebar').innerHTML += '<p style="color:red;">⚠️ فشل تحميل البيانات. تأكد من وجود الملفات في مجلد data/</p>';
+    });
+</script>
 </body>
 </html>
