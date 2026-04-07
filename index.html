@@ -3,293 +3,318 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>أطلس ليبيا السياحي - الخريطة التفاعلية</title>
+    <title>خريطة ليبيا السياحية -مشروع أطلس ليبيا السياحي | </title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: 'Tajawal', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #2c3e2f;
-            color: #333;
-        }
-        .header {
-            background: linear-gradient(135deg, #1e3c2c, #2a5a3a);
-            color: white;
-            padding: 15px 20px;
-            text-align: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            position: relative;
-            z-index: 10;
-        }
-        .header h1 {
-            font-size: 1.8rem;
-            letter-spacing: 1px;
-        }
-        .header p {
-            font-size: 0.9rem;
-            opacity: 0.9;
-        }
-        .main-container {
-            display: flex;
-            height: calc(100vh - 100px);
-        }
-        #map {
-            flex: 4;
-            height: 100%;
-            border-radius: 0;
-            box-shadow: 0 0 15px rgba(0,0,0,0.1);
-        }
-        .sidebar {
-            flex: 1;
-            background: #f8f9f0;
-            padding: 15px;
-            overflow-y: auto;
-            border-right: 1px solid #ccc;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
-            direction: rtl;
-        }
-        .sidebar h3 {
-            border-bottom: 2px solid #2a5a3a;
-            padding-bottom: 8px;
-            margin-bottom: 15px;
-            color: #1e3c2c;
-        }
-        .layer-control {
-            margin-bottom: 20px;
-        }
-        .layer-control label {
-            display: block;
-            margin: 8px 0;
-            cursor: pointer;
-            font-weight: 500;
-        }
-        .layer-control input {
-            margin-left: 8px;
-            transform: scale(1.1);
-            vertical-align: middle;
-        }
-        .legend {
-            background: white;
-            padding: 10px;
-            border-radius: 8px;
-            margin-top: 20px;
-            border: 1px solid #ddd;
-        }
-        .legend h4 {
-            margin-bottom: 8px;
-            color: #2a5a3a;
-        }
-        .legend-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 6px;
-            font-size: 12px;
-        }
-        .legend-color {
-            width: 20px;
-            height: 20px;
-            margin-left: 8px;
-            border-radius: 4px;
-        }
-        .legend-icon {
-            font-size: 16px;
-            width: 20px;
-            text-align: center;
-            margin-left: 8px;
-        }
-        footer {
-            text-align: center;
-            background: #1e3c2c;
-            color: white;
-            padding: 6px;
-            font-size: 12px;
-        }
-        @media (max-width: 768px) {
-            .main-container {
-                flex-direction: column;
-                height: auto;
-            }
-            .sidebar {
-                order: 2;
-                max-height: 300px;
-            }
-            #map {
-                height: 500px;
-            }
-        }
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+        .info-panel { position: absolute; bottom: 20px; left: 10px; z-index: 1000; background: rgba(0,0,0,0.7); color: white; padding: 8px 12px; border-radius: 8px; font-size: 12px; pointer-events: none; direction: ltr; font-family: monospace; }
+        .legend { background: white; padding: 8px 12px; border-radius: 8px; box-shadow: 0 1px 5px rgba(0,0,0,0.4); line-height: 1.4; font-size: 12px; max-height: 80vh; overflow-y: auto; direction: rtl; }
+        .legend h4 { margin: 0 0 5px 0; font-size: 14px; }
+        .legend i { display: inline-block; width: 24px; height: 24px; text-align: center; line-height: 24px; border-radius: 50%; margin-left: 8px; font-style: normal; font-weight: bold; }
+        .legend span { vertical-align: middle; }
+        .leaflet-control-layers { direction: rtl; }
+        .leaflet-control-attribution { font-size: 9px; }
+        @media (max-width: 600px) { .legend { font-size: 10px; max-height: 50vh; } }
+        .loading-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 2000; display: flex; justify-content: center; align-items: center; color: white; font-size: 24px; flex-direction: column; pointer-events: none; }
+        .loading-overlay p { background: rgba(0,0,0,0.8); padding: 12px 24px; border-radius: 40px; }
+        .custom-marker-icon { display: flex; align-items: center; justify-content: center; border-radius: 50%; color: white; font-weight: bold; font-size: 14px; box-shadow: 0 2px 5px rgba(0,0,0,0.3); border: 2px solid white; }
     </style>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet.ajax@2.1.0/dist/leaflet.ajax.min.js"></script>
 </head>
 <body>
-<div class="header">
-    <h1><i class="fas fa-map-marked-alt"></i> أطلس ليبيا السياحي</h1>
-    <p>استكشف المعالم الأثرية، المنتجعات، والقرى السياحية، والطبيعة الخلابة</p>
+<div id="map"></div>
+<div id="loadingOverlay" class="loading-overlay" style="display: flex;">
+    <p>⏳ جاري تحميل البيانات من GitHub ...</p>
 </div>
-<div class="main-container">
-    <div class="sidebar">
-        <h3><i class="fas fa-layer-group"></i> الطبقات</h3>
-        <div class="layer-control">
-            <label><input type="checkbox" id="toggleTourist" checked> 🏖️ القرى والمنتجعات السياحية</label>
-            <label><input type="checkbox" id="toggleHistoric" checked> 🏛️ المعالم الأثرية والتاريخية</label>
-            <label><input type="checkbox" id="toggleNatural" checked> 🌊 المعالم الطبيعية (بحيرات، أودية، شواطئ)</label>
-        </div>
-        <div class="legend">
-            <h4><i class="fas fa-info-circle"></i> دليل الأيقونات</h4>
-            <div class="legend-item"><div class="legend-color" style="background:#e67e22;"></div> منتجع / قرية سياحية</div>
-            <div class="legend-item"><div class="legend-color" style="background:#8e44ad;"></div> موقع أثري / متحف</div>
-            <div class="legend-item"><div class="legend-color" style="background:#2980b9;"></div> بحيرة / وادي / شاطئ</div>
-            <div class="legend-item"><div class="legend-icon"><i class="fas fa-mountain"></i></div> جبل / كهف / طبيعة</div>
-            <div class="legend-item"><div class="legend-icon"><i class="fas fa-hotel"></i></div> فندق / مبيت</div>
-        </div>
-        <div class="legend">
-            <h4><i class="fas fa-chart-line"></i> إحصائيات سريعة</h4>
-            <p>📌 إجمالي المعالم المعروضة: <span id="totalCount">0</span></p>
-            <p>🏛️ مواقع أثرية: <span id="historicCount">0</span></p>
-            <p>🏖️ منتجعات وقرى سياحية: <span id="touristCount">0</span></p>
-            <p>🌿 معالم طبيعية: <span id="naturalCount">0</span></p>
-        </div>
-        <p style="font-size:12px; margin-top:15px; color:#555;">✔️ اضغط على أيقونة للاطلاع على التفاصيل والصور.<br>✔️ يمكنك إخفاء/إظهار الطبقات من القائمة.</p>
-    </div>
-    <div id="map"></div>
-</div>
-<footer>
-    <i class="fas fa-database"></i> بيانات من أطلس ليبيا السياحي | خريطة تفاعلية - مشروع مفتوح المصدر
-</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 
 <script>
-    // تهيئة الخريطة
-    var map = L.map('map').setView([28.0, 16.5], 6);  // وسط ليبيا تقريباً
-
-    // طبقة الخريطة الأساسية
+    // --------------------------------------------------------------
+    // تكوين الخريطة الأساسية
+    // --------------------------------------------------------------
+    const map = L.map('map').setView([28.5, 17.0], 6);
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; CartoDB',
         subdomains: 'abcd',
         maxZoom: 18,
-        minZoom: 5,
-        dir: 'rtl'
+        minZoom: 4
     }).addTo(map);
-
-    // أيقونات مخصصة حسب النوع
-    const iconTourist = L.divIcon({ html: '<i class="fas fa-umbrella-beach" style="font-size:24px; color:#e67e22; text-shadow:1px 1px white;"></i>', iconSize: [24,24], className: 'custom-icon' });
-    const iconHistoric = L.divIcon({ html: '<i class="fas fa-landmark" style="font-size:24px; color:#8e44ad; text-shadow:1px 1px white;"></i>', iconSize: [24,24], className: 'custom-icon' });
-    const iconNatural = L.divIcon({ html: '<i class="fas fa-water" style="font-size:24px; color:#2980b9; text-shadow:1px 1px white;"></i>', iconSize: [24,24], className: 'custom-icon' });
-    const iconDefault = L.divIcon({ html: '<i class="fas fa-map-marker-alt" style="font-size:22px; color:#2c3e2f;"></i>', iconSize: [22,22], className: 'custom-icon' });
-
-    // متغيرات لتخزين الطبقات
-    let touristLayer, historicLayer, naturalLayer;
-    let allFeaturesCount = { tourist:0, historic:0, natural:0 };
-
-    // دالة لإنشاء popup محسّن
-    function createPopup(feature) {
-        let name = feature.properties.name || feature.properties.NAME || "موقع سياحي";
-        let desc = feature.properties.description || feature.properties.Description || "لا يوجد وصف مفصل";
-        // إذا كان الوصف بصيغة HTML أو نص عادي
-        let content = `<div style="max-width:300px; max-height:250px; overflow-y:auto; direction:rtl; font-family:Tajawal;">
-                        <h4 style="color:#2a5a3a; margin:0 0 5px;">${name}</h4>
-                        <div style="font-size:13px;">${desc}</div>
-                       </div>`;
-        return L.popup({ maxWidth: 320 }).setContent(content);
+    
+    // --------------------------------------------------------------
+    // تصنيف المعالم (بناءً على الاسم والوصف)
+    // --------------------------------------------------------------
+    function getCategory(feature) {
+        const name = (feature.properties.name || '').toLowerCase();
+        let desc = '';
+        if (feature.properties.description) {
+            if (typeof feature.properties.description === 'object' && feature.properties.description.value)
+                desc = feature.properties.description.value.toLowerCase();
+            else desc = String(feature.properties.description).toLowerCase();
+        }
+        const text = name + ' ' + desc;
+        
+        if (text.includes('فندق') || text.includes('منتجع') || text.includes('hotel') || text.includes('resort') || 
+            text.includes('فيلا') || text.includes('نزل') || text.includes('شقق فندقية') || text.includes('ضيافة') ||
+            text.includes('موتيل') || text.includes('استراحة')) return 'hotels';
+        if (text.includes('مطعم') || text.includes('restaurant') || text.includes('اكلات') || text.includes('بوفيه')) return 'restaurants';
+        if (text.includes('مقهى') || text.includes('كافيه') || text.includes('cafe') || text.includes('كافتيريا') || text.includes('شاي')) return 'cafes';
+        if (text.includes('قرية') || text.includes('مدينة') || text.includes('تجمع سكاني') || text.includes('بلدة') || 
+            text.includes('منطقة') || text.includes('حي') || text.includes('عزبة') || text.includes('أولاد')) return 'villages';
+        if (text.includes('بحيرة') || text.includes('وادي') || text.includes('جبل') || text.includes('كهف') || 
+            text.includes('شاطىء') || text.includes('جزيرة') || text.includes('سبخة') || text.includes('غابة') || 
+            text.includes('منتزه') || text.includes('طبيعية') || text.includes('قوس صخري') || text.includes('شلال') ||
+            text.includes('عين') || text.includes('نبع') || text.includes('رمال') || text.includes('كثبان') || 
+            text.includes('بركان') || text.includes('قارة') || text.includes('جرف') || text.includes('خليج')) return 'natural';
+        if (text.includes('أثري') || text.includes('تاريخي') || text.includes('قلعة') || text.includes('حصن') || 
+            text.includes('قصر') || text.includes('أطلال') || text.includes('مقبرة') || text.includes('ضريح') || 
+            text.includes('معبد') || text.includes('متحف') || text.includes('كنيسة أثرية') || text.includes('مدينة قديمة') ||
+            text.includes('صنم') || text.includes('مسلة') || text.includes('فسيفساء') || text.includes('بقايا') ||
+            text.includes('روماني') || text.includes('جرمنتي') || text.includes('موقع أثري') || text.includes('إغريقي')) return 'historical';
+        if (text.includes('مسجد') || text.includes('جامع') || text.includes('زاوية') || text.includes('كنيسة') || 
+            text.includes('معبد يهودي') || text.includes('ضريح ولي') || text.includes('كنيس') || text.includes('مصلى')) return 'religious';
+        if (text.includes('مستشفى') || text.includes('مدرسة') || text.includes('مطار') || text.includes('ميناء') || 
+            text.includes('محطة وقود') || text.includes('مصرف') || text.includes('بريد') || text.includes('شرطة') ||
+            text.includes('عيادة') || text.includes('مركز صحي') || text.includes('جامعة') || text.includes('كلية') ||
+            text.includes('ملعب') || text.includes('مدينة رياضية') || text.includes('مكتب بريد') || text.includes('مركز شرطة')) return 'services';
+        return 'other';
     }
-
-    // تحديد النوع بناءً على الخصائص أو المصدر
-    function getFeatureType(feature) {
-        let props = feature.properties;
-        let name = (props.name || props.NAME || "").toLowerCase();
-        let category = props.التصن || props.category || props.type || "";
-        if (category.includes("قرية سياحية") || category.includes("منتجع") || name.includes("منتجع") || name.includes("قرية") || props.التصن === "شاليهات" || props.التصن === "منتجع سياحي")
-            return "tourist";
-        if (category.includes("أثري") || props.selection_ === "ثقافي" || name.includes("معبد") || name.includes("كنيسة") || name.includes("مسرح") || name.includes("متحف") || name.includes("قوس") || name.includes("حمامات"))
-            return "historic";
-        return "natural";
-    }
-
-    // دالة لإضافة الطبقات مع العد
-    function loadLayer(data, layerType, icon, layerVar) {
-        let geoJsonLayer = L.geoJSON(data, {
-            pointToLayer: function(feature, latlng) {
-                return L.marker(latlng, { icon: icon });
-            },
-            onEachFeature: function(feature, layer) {
-                if (feature.geometry.type === 'Point') {
-                    layer.bindPopup(createPopup(feature));
-                } else if (feature.geometry.type === 'Polygon' || feature.geometry.type === 'LineString') {
-                    // للمساحات والخطوط نضيف popup عند النقر
-                    layer.bindPopup(createPopup(feature));
-                }
-                // عد الميزات
-                if (layerType === 'tourist') allFeaturesCount.tourist++;
-                else if (layerType === 'historic') allFeaturesCount.historic++;
-                else if (layerType === 'natural') allFeaturesCount.natural++;
+    
+    // تعريف الأيقونات لكل فئة
+    const categoryIcons = {
+        hotels: { icon: '🏨', bg: '#e53935', label: 'فنادق' },
+        restaurants: { icon: '🍽️', bg: '#fb8c00', label: 'مطاعم' },
+        cafes: { icon: '☕', bg: '#795548', label: 'مقاهي' },
+        villages: { icon: '🏘️', bg: '#8e24aa', label: 'قرى' },
+        natural: { icon: '🏞️', bg: '#43a047', label: 'طبيعة' },
+        historical: { icon: '🏛️', bg: '#1e88e5', label: 'تاريخ وآثار' },
+        religious: { icon: '🕌', bg: '#00acc1', label: 'ديني' },
+        services: { icon: '⚙️', bg: '#fdd835', label: 'خدمات' },
+        other: { icon: '📍', bg: '#9e9e9e', label: 'أخرى' }
+    };
+    
+    const layerNames = {
+        hotels: '🏨 فنادق ومنتجعات',
+        restaurants: '🍽️ مطاعم',
+        cafes: '☕ مقاهي',
+        villages: '🏘️ قرى ومدن',
+        natural: '🏞️ مواقع طبيعية',
+        historical: '🏛️ مواقع تاريخية وأثرية',
+        religious: '🕌 مواقع دينية',
+        services: '⚙️ خدمات (صحة، تعليم، وقود)',
+        other: '📌 أخرى'
+    };
+    
+    // إنشاء مجموعات عنقودية
+    const clusterGroups = {};
+    const overlayControl = {};
+    for (const [cat, info] of Object.entries(categoryIcons)) {
+        const cluster = L.markerClusterGroup({
+            chunkedLoading: true,
+            maxClusterRadius: 50,
+            iconCreateFunction: function(cluster) {
+                const count = cluster.getChildCount();
+                return L.divIcon({
+                    html: `<div style="background-color:${info.bg}; color:white; border-radius:50%; width:36px; height:36px; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:16px; border:2px solid white; box-shadow:0 0 4px rgba(0,0,0,0.5);">${count}</div>`,
+                    iconSize: [36, 36],
+                    className: 'custom-cluster'
+                });
             }
         });
-        return geoJsonLayer;
+        clusterGroups[cat] = cluster;
+        map.addLayer(cluster);
+        overlayControl[layerNames[cat]] = cluster;
     }
-
-    // تحميل الملفات (ملاحظة: المسارات تفترض وجود الملفات في مجلد data/)
-    // نظراً لضخامة البيانات، سيتم تحميلها باستخدام fetch وجمعها ثم تقسيمها حسب النوع التلقائي
-    Promise.all([
-        fetch('data/atals.json').then(res => res.json()),
-        fetch('data/data.geojson').then(res => res.json()),
-        fetch('data/mapatlas.geojson').then(res => res.json())
-    ]).then(([atals, dataGeo, mapAtlas]) => {
-        // دمج جميع الميزات
-        let allFeatures = [...atals.features, ...dataGeo.features, ...mapAtlas.features];
+    
+    function createCustomMarker(category) {
+        const info = categoryIcons[category] || categoryIcons.other;
+        return L.divIcon({
+            html: `<div class="custom-marker-icon" style="background-color:${info.bg}; width:28px; height:28px; font-size:16px;">${info.icon}</div>`,
+            iconSize: [28, 28],
+            className: '',
+            popupAnchor: [0, -12]
+        });
+    }
+    
+    // --------------------------------------------------------------
+    // منع الازدواجية: استخدام Map لتخزين المعالم الفريدة
+    // المفتاح: "lat,lng" + اختيارياً + اسم مختصر
+    // استراتيجية: الإحداثيات الدقيقة + الاسم (إن وجد) لتجنب فقدان معالم مختلفة في نفس النقطة
+    // --------------------------------------------------------------
+    function removeDuplicates(features) {
+        const uniqueMap = new Map();  // key => feature
+        let duplicateCount = 0;
         
-        // تصنيف الميزات
-        let touristFeatures = { type: "FeatureCollection", features: [] };
-        let historicFeatures = { type: "FeatureCollection", features: [] };
-        let naturalFeatures = { type: "FeatureCollection", features: [] };
-
-        allFeatures.forEach(f => {
-            if (!f.geometry) return;
-            let type = getFeatureType(f);
-            if (type === "tourist") touristFeatures.features.push(f);
-            else if (type === "historic") historicFeatures.features.push(f);
-            else naturalFeatures.features.push(f);
+        features.forEach(feature => {
+            if (!feature.geometry || feature.geometry.type !== 'Point') return;
+            const coords = feature.geometry.coordinates;
+            if (coords.length < 2) return;
+            const lat = coords[1];
+            const lng = coords[0];
+            if (isNaN(lat) || isNaN(lng)) return;
+            
+            // تقريب الإحداثيات إلى 5 منازل عشرية لتجنب اختلافات طفيفة (حوالي 1 متر)
+            const roundedLat = Math.round(lat * 1e5) / 1e5;
+            const roundedLng = Math.round(lng * 1e5) / 1e5;
+            let name = (feature.properties.name || '').trim();
+            // إذا كان الاسم طويلاً جداً نأخذ أول 50 حرفاً
+            if (name.length > 50) name = name.substring(0, 50);
+            
+            // مفتاح أساسي: الإحداثيات + الاسم (لأنه قد يكون نفس الموقع لمعلمين مختلفين مثل مطعم ومقهى)
+            const key = `${roundedLat},${roundedLng}|${name}`;
+            
+            if (!uniqueMap.has(key)) {
+                uniqueMap.set(key, feature);
+            } else {
+                duplicateCount++;
+                // دمج الوصف إذا أمكن (نضيف معلومات من التكرار)
+                const existing = uniqueMap.get(key);
+                let existingDesc = existing.properties.description || '';
+                let newDesc = feature.properties.description || '';
+                if (newDesc && !existingDesc.includes(newDesc)) {
+                    existing.properties.description = existingDesc + ' ; ' + newDesc;
+                }
+                // تحديث الاسم إذا كان أكثر دقة
+                if (name && name.length > (existing.properties.name || '').length) {
+                    existing.properties.name = name;
+                }
+            }
         });
-
-        // إنشاء الطبقات
-        touristLayer = loadLayer(touristFeatures, 'tourist', iconTourist);
-        historicLayer = loadLayer(historicFeatures, 'historic', iconHistoric);
-        naturalLayer = loadLayer(naturalFeatures, 'natural', iconNatural);
-
-        // إضافة الطبقات إلى الخريطة
-        touristLayer.addTo(map);
-        historicLayer.addTo(map);
-        naturalLayer.addTo(map);
-
-        // تحديث الإحصائيات
-        document.getElementById('touristCount').innerText = allFeaturesCount.tourist;
-        document.getElementById('historicCount').innerText = allFeaturesCount.historic;
-        document.getElementById('naturalCount').innerText = allFeaturesCount.natural;
-        document.getElementById('totalCount').innerText = allFeaturesCount.tourist + allFeaturesCount.historic + allFeaturesCount.natural;
-
-        // التحكم في ظهور الطبقات
-        document.getElementById('toggleTourist').addEventListener('change', (e) => {
-            if (e.target.checked) touristLayer.addTo(map);
-            else map.removeLayer(touristLayer);
+        
+        console.log(`تمت إزالة ${duplicateCount} عنصراً مكرراً.`);
+        return Array.from(uniqueMap.values());
+    }
+    
+    // --------------------------------------------------------------
+    // إضافة المعالم بعد إزالة الازدواجية
+    // --------------------------------------------------------------
+    let totalProcessed = 0;
+    function addFeaturesToMap(uniqueFeatures) {
+        uniqueFeatures.forEach(feature => {
+            const coords = feature.geometry.coordinates;
+            const lat = coords[1];
+            const lng = coords[0];
+            const category = getCategory(feature);
+            const markerIcon = createCustomMarker(category);
+            const marker = L.marker([lat, lng], { icon: markerIcon });
+            
+            let name = feature.properties.name || 'بدون اسم';
+            let description = feature.properties.description || '';
+            let cleanDesc = '';
+            if (description) {
+                if (typeof description === 'object' && description.value) cleanDesc = description.value;
+                else cleanDesc = String(description);
+                cleanDesc = cleanDesc.replace(/<img[^>]*>/g, ' [صورة] ').replace(/<a[^>]*>/g, '').replace(/<\/a>/g, '');
+                if (cleanDesc.length > 250) cleanDesc = cleanDesc.substring(0, 250) + '...';
+            }
+            if (!cleanDesc) cleanDesc = '📍 معلم سياحي';
+            
+            const popupContent = `
+                <div dir="rtl" style="max-width:280px; font-family:Tahoma;">
+                    <strong style="font-size:1.1rem;">${escapeHtml(name)}</strong><br>
+                    <div style="margin-top:5px; font-size:0.85rem; color:#333;">${escapeHtml(cleanDesc)}</div>
+                    <div style="margin-top:4px; font-size:0.7rem; color:#888;">${layerNames[category] || 'موقع'}</div>
+                </div>
+            `;
+            marker.bindPopup(popupContent);
+            clusterGroups[category].addLayer(marker);
+            totalProcessed++;
         });
-        document.getElementById('toggleHistoric').addEventListener('change', (e) => {
-            if (e.target.checked) historicLayer.addTo(map);
-            else map.removeLayer(historicLayer);
+        
+        console.log(`تمت إضافة ${totalProcessed} معلم فريد إلى الخريطة`);
+        const panelDiv = document.querySelector('.info-panel');
+        if (panelDiv) panelDiv.innerHTML = `📍 إجمالي المواقع الفريدة: ${totalProcessed} موقع | تمت إزالة التكرارات تلقائياً`;
+        const loadingDiv = document.getElementById('loadingOverlay');
+        if (loadingDiv) loadingDiv.style.display = 'none';
+    }
+    
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
         });
-        document.getElementById('toggleNatural').addEventListener('change', (e) => {
-            if (e.target.checked) naturalLayer.addTo(map);
-            else map.removeLayer(naturalLayer);
+    }
+    
+    // --------------------------------------------------------------
+    // تحميل البيانات من GitHub ثم إزالة التكرارات وعرضها
+    // --------------------------------------------------------------
+    const GITHUB_RAW_URL = 'https://raw.githubusercontent.com/tidclibya2026/libyan--map/main/mapatlas.geojson';
+    
+    fetch(GITHUB_RAW_URL)
+        .then(response => {
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            return response.json();
+        })
+        .then(data => {
+            console.log('تم تحميل البيانات الكاملة من GitHub');
+            if (data && data.features && Array.isArray(data.features)) {
+                // الخطوة الأساسية: إزالة التكرارات
+                const uniqueFeatures = removeDuplicates(data.features);
+                addFeaturesToMap(uniqueFeatures);
+            } else {
+                throw new Error('بيانات غير صالحة');
+            }
+        })
+        .catch(error => {
+            console.error('خطأ في تحميل البيانات:', error);
+            const loadingDiv = document.getElementById('loadingOverlay');
+            if (loadingDiv) {
+                loadingDiv.innerHTML = '<p style="background:#d32f2f;">⚠️ فشل تحميل البيانات من GitHub. يتم عرض بيانات توضيحية محدودة مع منع الازدواجية.</p>';
+                setTimeout(() => { if (loadingDiv) loadingDiv.style.display = 'none'; }, 4000);
+            }
+            // بيانات احتياطية مع تكرارات متعمدة لاختبار إزالة الازدواجية
+            const fallbackFeatures = [
+                {"geometry":{"type":"Point","coordinates":[13.187,32.857]},"properties":{"name":"فندق كورنثيا طرابلس","description":"فندق 5 نجوم على الكورنيش"}},
+                {"geometry":{"type":"Point","coordinates":[13.187,32.857]},"properties":{"name":"فندق كورنثيا (نسخة مكررة)","description":"نفس الموقع - سيتم دمجه"}},
+                {"geometry":{"type":"Point","coordinates":[13.176,32.899]},"properties":{"name":"مطعم الأندلس","description":"مأكولات بحرية تقليدية"}},
+                {"geometry":{"type":"Point","coordinates":[13.192,32.890]},"properties":{"name":"مقهى الظهرة","description":"أجواء عائلية"}},
+                {"geometry":{"type":"Point","coordinates":[14.290,32.638]},"properties":{"name":"لبدة الأثرية (لبتس ماغنا)","description":"مدينة رومانية قديمة - موقع تراث عالمي"}},
+                {"geometry":{"type":"Point","coordinates":[14.290,32.638]},"properties":{"name":"لبتس ماغنا (تكرار)","description":"نفس الموقع الأثري"}},
+                {"geometry":{"type":"Point","coordinates":[12.485,32.805]},"properties":{"name":"صبراتة الأثرية","description":"مدرج روماني ومدينة فينيقية"}},
+                {"geometry":{"type":"Point","coordinates":[21.822,32.862]},"properties":{"name":"شحات (قورينا)","description":"مدينة إغريقية أثرية"}},
+                {"geometry":{"type":"Point","coordinates":[13.083,32.848]},"properties":{"name":"غابة قرجي","description":"منتزه طبيعي"}},
+                {"geometry":{"type":"Point","coordinates":[20.067,32.117]},"properties":{"name":"جامع العصمان بنغازي","description":"جامع تاريخي"}},
+                {"geometry":{"type":"Point","coordinates":[10.568,24.812]},"properties":{"name":"تادرارت أكاكوس","description":"رسوم صخرية – موقع تراث عالمي"}},
+                {"geometry":{"type":"Point","coordinates":[9.496,30.133]},"properties":{"name":"غدامس القديمة","description":"مدينة تاريخية فريدة"}}
+            ];
+            const uniqueFallback = removeDuplicates(fallbackFeatures);
+            addFeaturesToMap(uniqueFallback);
         });
-
-        // إضافة بعض التعديلات لتوسيط الخريطة على ليبيا
-        map.fitBounds([[19.0, 9.0], [33.0, 25.0]]);
-    }).catch(error => {
-        console.error("خطأ في تحميل البيانات:", error);
-        document.querySelector('.sidebar').innerHTML += '<p style="color:red;">⚠️ فشل تحميل البيانات. تأكد من وجود الملفات في مجلد data/</p>';
-    });
+    
+    // إضافة لوحة التحكم بالطبقات
+    L.control.layers(null, overlayControl, { collapsed: false, position: 'topright' }).addTo(map);
+    
+    // وسيلة إيضاح
+    const legend = L.control({ position: 'bottomright' });
+    legend.onAdd = function() {
+        const div = L.DomUtil.create('div', 'legend');
+        div.innerHTML = '<h4>📋 تصنيف المواقع</h4>';
+        for (const [cat, name] of Object.entries(layerNames)) {
+            const iconInfo = categoryIcons[cat] || categoryIcons.other;
+            div.innerHTML += `<i style="background-color:${iconInfo.bg};">${iconInfo.icon}</i> <span>${name}</span><br>`;
+        }
+        div.innerHTML += '<hr><small>✔️ تم حذف النقاط المكررة تلقائياً</small><br><small>🎨 أيقونات مميزة لكل فئة</small>';
+        return div;
+    };
+    legend.addTo(map);
+    
+    // شريط معلومات
+    const infoPanel = L.control({ position: 'bottomleft' });
+    infoPanel.onAdd = function() {
+        const div = L.DomUtil.create('div', 'info-panel');
+        div.innerHTML = '🔄 جاري تحميل البيانات وفحص التكرارات ...';
+        return div;
+    };
+    infoPanel.addTo(map);
+    
+    map.zoomControl.setPosition('topleft');
+    console.log('خريطة ليبيا - تم تفعيل نظام منع الازدواجية بنجاح');
 </script>
 </body>
 </html>
