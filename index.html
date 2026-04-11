@@ -265,7 +265,7 @@
             console.error('خطأ في تحميل البيانات:', error);
             const loadingDiv = document.getElementById('loadingOverlay');
             if (loadingDiv) {
-                loadingDiv.innerHTML = '<p style="background:#d32f2f;">⚠️ فشل تحميل البيانات من GitHub. يتم عرض بيانات توضيحية محدودة مع منع الازدواجية.</p>';
+                loadingDiv.innerHTML = '<p style="background:#d32f2f;">⚠️ فشل تحميل البيانات من GitHub. يتم عرض بيانات توضيحية محدودة .</p>';
                 setTimeout(() => { if (loadingDiv) loadingDiv.style.display = 'none'; }, 4000);
             }
             // بيانات احتياطية مع تكرارات متعمدة لاختبار إزالة الازدواجية
@@ -308,13 +308,13 @@
     const infoPanel = L.control({ position: 'bottomleft' });
     infoPanel.onAdd = function() {
         const div = L.DomUtil.create('div', 'info-panel');
-        div.innerHTML = '🔄 جاري تحميل البيانات وفحص التكرارات ...';
+        div.innerHTML = '🔄 جاري تحميل البيانات  ...';
         return div;
     };
     infoPanel.addTo(map);
     
     map.zoomControl.setPosition('topleft');
-    console.log('خريطة ليبيا - تم تفعيل نظام منع الازدواجية بنجاح');
+    console.log('خريطة ليبيا - تم تفعيل النظام بنجاح');
 </script>
 </body>
 </html>
